@@ -1,16 +1,74 @@
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useEffect} from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Layout from './Layout/Layout';
+import Home from './Home/Home';
+import { useDispatch } from 'react-redux';
+import { refreshUser } from 'redux/auth/operations';
+import { PrivateRoute } from './PrivateRoute';
+import { PublicRoute } from './PublicRoute';
+import { useAuth } from 'redux/auth/useAuth';
+import RegisterPage from './Register/Register';
+import ContactsPage from '../pages/ContactsPage';
+import LoginPage from '../pages/Login';
+import Loader from './Loader/Loader';
+
+
+
+// const RegisterPage = lazy(() =>
+//   import('../pages/RegisterPage')
+// );
+// const ContactsPage = lazy(() =>
+//   import('../pages/ContactsPage')
+// );
+
+// const LoginPage = lazy(() =>
+//   import('../pages/Login')
+// );
+
 export const App = () => {
-  return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101'
-      }}
-    >
-      React homework template
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(refreshUser());
+  }, [dispatch]);
+
+  const { isRefreshing } = useAuth();
+
+  // console.log('isRefreshing', isRefreshing);
+  // console.log('error', error);
+
+  return isRefreshing ? (
+    <Loader />
+  ) : (<div>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+
+          <Route
+            path="/register"
+            element={
+              <PublicRoute
+                redirectTo="/contacts"
+                component={<RegisterPage />}
+              />
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute redirectTo="/contacts" component={<LoginPage />} />
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <PrivateRoute redirectTo="/login" component={<ContactsPage />} />
+            }
+          />
+        </Route>
+      </Routes>
+      <ToastContainer autoClose={2000} />
     </div>
   );
 };
